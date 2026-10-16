@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { topCategories } from "@/lib/data";
+import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces" });
 
 export const metadata: Metadata = {
   title: { default: "CVU Pharmacy Cabo San Lucas — 24/7 Hotel Pharmacy Delivery", template: "%s | CVU Pharmacy" },
@@ -11,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const cats = topCategories().slice(0, 12);
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
       <body className="min-h-screen flex flex-col">
         <div className="bg-brand text-center text-xs text-white py-2 px-4">
           Free delivery on orders $99+ · Most deliveries in 45–60 minutes · English-speaking staff

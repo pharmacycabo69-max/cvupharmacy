@@ -15,10 +15,12 @@ npm run build && npm start
 - `data/` — JSON/CSV obtenidos del sitio (productos, categorías, páginas, posts).
 - `public/images/` — imágenes descargadas (`wp-content/uploads` del sitio original).
 - `src/lib/data.ts` — carga y normaliza los datos (precios, URLs locales).
+- `src/lib/content.ts` — convierte el HTML de Elementor de páginas/posts en un modelo estructurado (hero, secciones, tarjetas, FAQ, CTA).
+- `src/components/content/` — componentes que renderizan ese modelo con el diseño propio.
 - `src/app/` — rutas: `/`, `/shop`, `/category/[slug]`, `/product/[slug]`, `/search`, `/blog`, `/[slug]` (páginas y posts).
 - `scraper/scrape.py` — `npm run scrape` vuelve a descargar todo (reanudable).
 
 ## Pendiente
 
 - Carrito y checkout (hoy la compra es por teléfono).
-- Las páginas de contenido (hoteles, servicios) son HTML de Elementor insertado tal cual; conviene rediseñarlas.
+- Teléfono y WhatsApp están centralizados en `src/lib/site.ts`.
