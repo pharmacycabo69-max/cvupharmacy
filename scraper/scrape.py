@@ -5,7 +5,7 @@ Salida (relativa a la raíz del repo):
   data/products.json, data/products.csv, data/categories.json
   data/pages.json, data/posts.json
   site/pages/<slug>.html, site/posts/<slug>.html   (HTML renderizado)
-  images/<ruta original bajo wp-content/uploads>
+  public/images/<ruta original bajo wp-content/uploads>
 Reanudable: omite lo ya descargado.
 """
 import csv, json, os, re, sys, time, urllib.request, urllib.parse
@@ -65,7 +65,7 @@ def download_image(url):
     rel = image_path(url)
     if not rel:
         return
-    dest = f"{ROOT}/images/{rel}"
+    dest = f"{ROOT}/public/images/{rel}"
     if os.path.exists(dest):
         return
     data = get(url, binary=True)

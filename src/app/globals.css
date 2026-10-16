@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #008069;
+  --color-brand-dark: #006b58;
+  --color-ink: #111111;
+  --color-muted: #6f7682;
+  --color-soft: #eef0f2;
+}
+
+body { color: var(--color-ink); background: #fff; }
+
+.wp-content { max-width: 60rem; margin-inline: auto; line-height: 1.7; }
+.wp-content img { max-width: 100%; height: auto; }
+.wp-content h1, .wp-content h2, .wp-content h3 { font-weight: 700; margin: 1.5em 0 .5em; line-height: 1.2; }
+.wp-content h1 { font-size: 2rem; } .wp-content h2 { font-size: 1.5rem; } .wp-content h3 { font-size: 1.25rem; }
+.wp-content p, .wp-content ul, .wp-content ol { margin: 0 0 1em; }
+.wp-content ul { list-style: disc; padding-left: 1.5rem; } .wp-content ol { list-style: decimal; padding-left: 1.5rem; }
+.wp-content a { color: var(--color-brand); text-decoration: underline; }
