@@ -1,26 +1,27 @@
 # CVU Pharmacy
 
-Reconstrucción en Next.js (App Router + Tailwind v4) de cvupharmacy.com, a partir de un scrape del sitio WordPress/WooCommerce original.
+Réplica de cvupharmacy.com servida desde Next.js. El diseño es exactamente el original: se usa su HTML, CSS y JS
+(copiados con wget), no una reconstrucción.
 
-## Desarrollo
+## Uso
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
+npm run dev            # http://localhost:3000
 npm run build && npm start
 ```
 
-## Estructura
+## Cómo funciona
 
-- `data/` — JSON/CSV obtenidos del sitio (productos, categorías, páginas, posts).
-- `public/images/` — imágenes descargadas (`wp-content/uploads` del sitio original).
-- `src/lib/data.ts` — carga y normaliza los datos (precios, URLs locales).
-- `src/lib/content.ts` — convierte el HTML de Elementor de páginas/posts en un modelo estructurado (hero, secciones, tarjetas, FAQ, CTA).
-- `src/components/content/` — componentes que renderizan ese modelo con el diseño propio.
-- `src/app/` — rutas: `/`, `/shop`, `/category/[slug]`, `/product/[slug]`, `/search`, `/blog`, `/[slug]` (páginas y posts).
-- `scraper/scrape.py` — `npm run scrape` vuelve a descargar todo (reanudable).
+- `mirror/` — copia estática del sitio (todas las URLs de los sitemaps: páginas, posts, categorías, etiquetas y
+  3,280 productos, con sus CSS, JS e imágenes).
+- `src/app/[[...path]]/route.ts` — único handler de la app: sirve `mirror/` en las mismas URLs del original
+  (`/shop/`, `/product/<slug>/`…). Al vuelo corrige lo que wget deja distinto: enlaces `…/index.html`, archivos
+  con `?ver=` en el nombre y rutas de assets que el JS arma con el dominio.
+- `scraper/scrape.py` + `data/` — datos estructurados (productos, categorías, páginas, posts) del scrape por API.
+- Rama `nextjs-redesign` — el rediseño propio anterior (catálogo y páginas hechos con componentes de Next.js).
 
-## Pendiente
+## Limitaciones
 
-- Carrito y checkout (hoy la compra es por teléfono).
-- Teléfono y WhatsApp están centralizados en `src/lib/site.ts`.
+Es una copia estática: lo que necesita el servidor de WordPress/WooCommerce no funciona (carrito, checkout,
+búsqueda, login, `wp-json`). Para actualizar la copia hay que volver a descargar el sitio.
