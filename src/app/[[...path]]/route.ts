@@ -50,6 +50,13 @@ const existsLocally = (urlPath: string) => {
 
 function fixHtml(html: string): string {
   return html
+    // menú flotante de contacto: sin opción ni dirección de correo
+    .replace(/<a class="cvu-hub-act cvu-act-mail" data-hub-mail>[\s\S]*?<\/a>/, "")
+    .replace(/\s*email: "[^"]*@cvupharmacy\.com",\s*emailSubject: "[^"]*",/, "")
+    .replace(/\s*mailEl\.addEventListener\("click", function \(\) \{ track\("email"\); \}\);/, "")
+    .replace(/\s*var mailEl = modal\.querySelector\("\[data-hub-mail\]"\);/, "")
+    .replace(/\s*mailEl\.href = [^;]*;/, "")
+    .replace(/\s*document\.getElementById\("cvu-hub-mailsub"\)\.textContent = [^;]*;/, "")
     // rutas de assets que el JS inline arma con el dominio (Elementor, WooCommerce): que apunten al espejo
     .replace(/https:\\\/\\\/(?:www\.)?cvupharmacy\.com(\\\/wp-(?:content|includes)\\\/)/g, "$1")
     .replace(/https:\/\/(?:www\.)?cvupharmacy\.com(\/wp-(?:content|includes)\/)/g, "$1")
