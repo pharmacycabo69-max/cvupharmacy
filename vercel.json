@@ -1686,57 +1686,97 @@
       "statusCode": 301
     },
     {
-      "source": "/shop/:path*",
+      "source": "/shop/(.*)",
       "destination": "https://www.rmcpharmacy.com/pharmacy",
       "statusCode": 301
     },
     {
-      "source": "/product/:path*",
+      "source": "/shop",
       "destination": "https://www.rmcpharmacy.com/pharmacy",
       "statusCode": 301
     },
     {
-      "source": "/product-category/:path*",
+      "source": "/product/(.*)",
       "destination": "https://www.rmcpharmacy.com/pharmacy",
       "statusCode": 301
     },
     {
-      "source": "/product-tag/:path*",
+      "source": "/product",
       "destination": "https://www.rmcpharmacy.com/pharmacy",
       "statusCode": 301
     },
     {
-      "source": "/category/:path*",
+      "source": "/product-category/(.*)",
+      "destination": "https://www.rmcpharmacy.com/pharmacy",
+      "statusCode": 301
+    },
+    {
+      "source": "/product-category",
+      "destination": "https://www.rmcpharmacy.com/pharmacy",
+      "statusCode": 301
+    },
+    {
+      "source": "/product-tag/(.*)",
+      "destination": "https://www.rmcpharmacy.com/pharmacy",
+      "statusCode": 301
+    },
+    {
+      "source": "/product-tag",
+      "destination": "https://www.rmcpharmacy.com/pharmacy",
+      "statusCode": 301
+    },
+    {
+      "source": "/category/(.*)",
       "destination": "https://www.rmcpharmacy.com/blog",
       "statusCode": 301
     },
     {
-      "source": "/tag/:path*",
+      "source": "/category",
       "destination": "https://www.rmcpharmacy.com/blog",
       "statusCode": 301
     },
     {
-      "source": "/author/:path*",
+      "source": "/tag/(.*)",
       "destination": "https://www.rmcpharmacy.com/blog",
       "statusCode": 301
     },
     {
-      "source": "/page/:path*",
+      "source": "/tag",
       "destination": "https://www.rmcpharmacy.com/blog",
       "statusCode": 301
     },
     {
-      "source": "/cart/:path*",
+      "source": "/author/(.*)",
+      "destination": "https://www.rmcpharmacy.com/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/author",
+      "destination": "https://www.rmcpharmacy.com/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/page/(.*)",
+      "destination": "https://www.rmcpharmacy.com/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/page",
+      "destination": "https://www.rmcpharmacy.com/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/cart/(.*)",
       "destination": "https://www.rmcpharmacy.com/pharmacy",
       "statusCode": 301
     },
     {
-      "source": "/my-account/:path*",
+      "source": "/my-account/(.*)",
       "destination": "https://www.rmcpharmacy.com/",
       "statusCode": 301
     },
     {
-      "source": "/doctor-dashboard/:path*",
+      "source": "/doctor-dashboard/(.*)",
       "destination": "https://www.rmcpharmacy.com/",
       "statusCode": 301
     },
