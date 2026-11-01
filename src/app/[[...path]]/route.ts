@@ -49,6 +49,26 @@ const existsLocally = (urlPath: string) => {
   return v;
 };
 
+// Checkout: la copia solo armaba un mensaje de WhatsApp. Con "Pay Now" ahora manda los datos de entrega al
+// servidor (POST /checkout/), que los valida y abre Stripe mostrándolos; "Pay on Delivery" sigue por WhatsApp.
+const WA_LINE = "var url = 'https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(msg);";
+const PAY_NOW =
+  "if(d.pmtMethod==='pay-now'){" +
+  "var btn=root.querySelector('[data-place]');" +
+  "if(btn){btn.disabled=true;btn.textContent='Opening secure payment…';}" +
+  "fetch('/checkout/',{method:'POST',credentials:'include',headers:{'content-type':'application/json'},body:JSON.stringify(d)})" +
+  ".then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})" +
+  ".then(function(x){if(x.ok&&x.j.url){window.location.href=x.j.url;return;}throw new Error((x.j&&x.j.error)||'');})" +
+  ".catch(function(e){if(btn){btn.disabled=false;btn.innerHTML='Order Securely &rarr;';}" +
+  "alert(e&&e.message&&e.message!=='Failed to fetch'?e.message:'We could not start the card payment. Please try again or choose Pay on Delivery.');});" +
+  "return;}";
+const OLD_NOTICE = "<strong>Note:</strong> Card processing is being finalized. Your order details will be confirmed by our team via WhatsApp within minutes for secure payment coordination.";
+const NEW_NOTICE = "<strong>Secure card payment:</strong> after you tap Order, you pay on Stripe and your delivery details are shown there. Prefer cash? Choose Pay on Delivery and we confirm on WhatsApp.";
+
+// La copia de /checkout/ se guardó con el carrito vacío: trae el bloque "Your cart is currently empty!" de
+// WooCommerce y el pie de página por encima del formulario. Con el formulario activo se ocultan.
+const CHECKOUT_CSS = "<style>body.cvu-ck-active main#content,body.cvu-ck-active #site-footer{display:none!important}body.cvu-ck-active #cvu-ck-root{margin-top:78px}</style>";
+
 // Favicon (corazón rojo, generado con scraper/make_favicon.py). La copia original no declaraba ninguno.
 const ICONS =
   `<link rel="icon" href="/favicon.svg?v=1" type="image/svg+xml">` +
@@ -59,6 +79,9 @@ const ICONS =
 function fixHtml(html: string, canonical: string): string {
   return html
     .replace(/<head([^>]*)>/i, (m) => (/rel=["'](?:shortcut )?icon["']/i.test(html) ? m : m + ICONS))
+    .replace(WA_LINE, () => PAY_NOW + WA_LINE)
+    .replace(OLD_NOTICE, () => NEW_NOTICE)
+    .replace("</head>", () => CHECKOUT_CSS + "</head>")
     // wget dejó el canonical relativo ("index.html"); debe ser la URL absoluta de la página
     .replace(/(<link rel="canonical" href=")[^"]*(")/g, `$1${canonical}$2`)
     // menú flotante de contacto: sin opción ni dirección de correo

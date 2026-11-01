@@ -34,8 +34,14 @@ precio y foto de `data/catalog.json` y arma el cobro al vuelo con `price_data` (
 - Endpoints de WooCommerce que ya espera la interfaz del sitio (mini-carrito, botones "Add to cart", contador):
   `/?wc-ajax=add_to_cart`, `/?wc-ajax=get_refreshed_fragments`, `/wp-json/wc/store/v1/cart` (+ `update-item`,
   `remove-item`, `add-item`) y el formulario clásico de la página de producto.
-- `/checkout/` crea la sesión de Stripe Checkout (envío solo a México, pide teléfono) y redirige. Sin
-  `STRIPE_SECRET_KEY` muestra un aviso con WhatsApp. `/order-received/` confirma el pago y vacía el carrito.
+- `/checkout/` sirve el formulario original de la tienda, que pide los datos de entrega: contacto, hotel/Airbnb/otra
+  dirección, hora, quién recibe, instrucciones y propina. Con **Pay Now**, el formulario envía esos datos
+  (`POST /checkout/`); el servidor los valida, crea la sesión de Stripe Checkout (la propina va como una línea aparte)
+  y redirige. Stripe ya no vuelve a pedir teléfono ni dirección: muestra el resumen de la entrega sobre el botón de
+  pago y los datos quedan en el pago (metadata y envío) para verlos en el panel de Stripe. **Pay on Delivery** sigue
+  armando el mensaje de WhatsApp. Sin `STRIPE_SECRET_KEY` avisa y ofrece WhatsApp.
+- `/order-received/?session_id=…` consulta a Stripe: solo confirma el pago si está pagado y muestra los datos de
+  entrega; sin un pago real redirige a la tienda. Vacía el carrito solo cuando el pago está confirmado.
 
 Variables de entorno (Vercel): `STRIPE_SECRET_KEY` (requerida para cobrar) y `SITE_URL` (opcional; por defecto se usa
 el dominio de la petición).
