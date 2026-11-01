@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { Readable } from "node:stream";
+import { handleStore, HTML_PATCH } from "@/lib/store";
 
 /**
  * Sirve la copia estática de cvupharmacy.com (carpeta mirror/, hecha con wget)
@@ -62,18 +63,24 @@ function fixHtml(html: string, canonical: string): string {
     // rutas de assets que el JS inline arma con el dominio (Elementor, WooCommerce): que apunten al espejo
     .replace(/https:\\\/\\\/(?:www\.)?cvupharmacy\.com(\\\/wp-(?:content|includes)\\\/)/g, "$1")
     .replace(/https:\/\/(?:www\.)?cvupharmacy\.com(\/wp-(?:content|includes)\/)/g, "$1")
+    // mini-carrito: wget antepuso la URL de la página a la miniatura (que ya es absoluta)
+    .replace(/src="https:\/\/cvupharmacy\.com\/[^"']*\/'\+esc\(img\)/g, `src="'+esc(img)`)
     // "?ver=1" que wget codificó en los enlaces a archivos
     .replace(/(\.(?:js|css|png|jpe?g|gif|svg|webp|woff2?|ttf|ico))%3F/g, "$1?")
     // "shop/index.html" -> "shop/", "index.html" -> "./"
     .replace(/((?:href|action)=")((?:[^"#?]*\/)?)index\.html((?:[#?][^"]*)?")/g, (_m, a, dir, rest) => `${a}${dir || "./"}${rest}`)
     // enlaces absolutos al propio sitio -> locales, si la página existe en el espejo
-    .replace(/(<a\b[^>]*?\shref=")https:\/\/(?:www\.)?cvupharmacy\.com(\/[^"#?]*)/g, (m, a, p) => (existsLocally(p) ? `${a}${p}` : m));
+    .replace(/(<a\b[^>]*?\shref=")https:\/\/(?:www\.)?cvupharmacy\.com(\/[^"#?]*)/g, (m, a, p) => (existsLocally(p) ? `${a}${p}` : m))
+    // carrito: abre el mini-carrito tras agregar desde la página de producto y oculta el enlace "View cart"
+    .replace("</body>", `${HTML_PATCH}</body>`);
 }
 
 const htmlCache = new Map<string, string>();
 
 export async function GET(req: Request, { params }: { params: Promise<{ path?: string[] }> }) {
   const { path: segs = [] } = await params;
+  const store = await handleStore(req, segs);
+  if (store) return store;
   const url = new URL(req.url);
   const file = resolve(segs, url.search);
   if (!file) return new Response("Not found", { status: 404 });
@@ -96,6 +103,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ path?: s
   return new Response(Readable.toWeb(fs.createReadStream(file)) as ReadableStream, {
     headers: { "content-type": type, "content-length": String(size), "cache-control": "public, max-age=86400" },
   });
+}
+
+export async function POST(req: Request, { params }: { params: Promise<{ path?: string[] }> }) {
+  const { path: segs = [] } = await params;
+  const store = await handleStore(req, segs);
+  return store ?? new Response("Method not allowed", { status: 405, headers: { allow: "GET, HEAD" } });
 }
 
 export const HEAD = GET;

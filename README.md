@@ -23,7 +23,24 @@ npm run build && npm start
 - `scraper/scrape.py` + `data/` — datos estructurados (productos, categorías, páginas, posts) del scrape por API.
 - Rama `nextjs-redesign` — el rediseño propio anterior (catálogo y páginas hechos con componentes de Next.js).
 
+## Carrito y checkout dinámico (Stripe, sin productos registrados)
+
+Los productos **no están registrados en Stripe**. El navegador solo envía ids y cantidades; el servidor toma nombre,
+precio y foto de `data/catalog.json` y arma el cobro al vuelo con `price_data` (`src/lib/store.ts`).
+
+- `data/catalog.json` — lista de precios compacta (2,489 productos comprables; los 791 con precio 0 no se venden).
+  Regenerar si cambia `data/products.json`: `python3 -I scraper/build_catalog.py`.
+- El carrito vive en la cookie `cvu_cart` (HttpOnly, `id:cantidad,…`, máx. 40 líneas y 20 por producto).
+- Endpoints de WooCommerce que ya espera la interfaz del sitio (mini-carrito, botones "Add to cart", contador):
+  `/?wc-ajax=add_to_cart`, `/?wc-ajax=get_refreshed_fragments`, `/wp-json/wc/store/v1/cart` (+ `update-item`,
+  `remove-item`, `add-item`) y el formulario clásico de la página de producto.
+- `/checkout/` crea la sesión de Stripe Checkout (envío solo a México, pide teléfono) y redirige. Sin
+  `STRIPE_SECRET_KEY` muestra un aviso con WhatsApp. `/order-received/` confirma el pago y vacía el carrito.
+
+Variables de entorno (Vercel): `STRIPE_SECRET_KEY` (requerida para cobrar) y `SITE_URL` (opcional; por defecto se usa
+el dominio de la petición).
+
 ## Limitaciones
 
-Es una copia estática: lo que necesita el servidor de WordPress/WooCommerce no funciona (carrito, checkout,
-búsqueda, login, `wp-json`). Para actualizar la copia hay que volver a descargar el sitio.
+Es una copia estática: lo que necesita el servidor de WordPress/WooCommerce no funciona (búsqueda, login, `wp-json`);
+el carrito y el checkout están reimplementados arriba. Para actualizar la copia hay que volver a descargar el sitio.
