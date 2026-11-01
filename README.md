@@ -18,6 +18,8 @@ npm run build && npm start
 - `src/app/[[...path]]/route.ts` — único handler de la app: sirve `mirror/` en las mismas URLs del original
   (`/shop/`, `/product/<slug>/`…). Al vuelo corrige lo que wget deja distinto: enlaces `…/index.html`, archivos
   con `?ver=` en el nombre y rutas de assets que el JS arma con el dominio.
+- `scraper/generate_sitemap.py` — genera los sitemaps (`mirror/sitemap_index.xml` y 7 más) a partir de las páginas de
+  `mirror/`; se omiten las `noindex`. Ejecutar de nuevo si cambian las páginas.
 - `scraper/scrape.py` + `data/` — datos estructurados (productos, categorías, páginas, posts) del scrape por API.
 - Rama `nextjs-redesign` — el rediseño propio anterior (catálogo y páginas hechos con componentes de Next.js).
 

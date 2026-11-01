@@ -48,8 +48,10 @@ const existsLocally = (urlPath: string) => {
   return v;
 };
 
-function fixHtml(html: string): string {
+function fixHtml(html: string, canonical: string): string {
   return html
+    // wget dejó el canonical relativo ("index.html"); debe ser la URL absoluta de la página
+    .replace(/(<link rel="canonical" href=")[^"]*(")/g, `$1${canonical}$2`)
     // menú flotante de contacto: sin opción ni dirección de correo
     .replace(/<a class="cvu-hub-act cvu-act-mail" data-hub-mail>[\s\S]*?<\/a>/, "")
     .replace(/\s*email: "[^"]*@cvupharmacy\.com",\s*emailSubject: "[^"]*",/, "")
@@ -82,7 +84,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ path?: s
   if (ext === "html") {
     let body = htmlCache.get(file);
     if (body === undefined) {
-      body = fixHtml(fs.readFileSync(file, "utf-8"));
+      const dir = path.relative(ROOT, path.dirname(file)).split(path.sep).join("/");
+      body = fixHtml(fs.readFileSync(file, "utf-8"), `${SITE}/${dir ? dir + "/" : ""}`);
       if (htmlCache.size > 300) htmlCache.clear();
       htmlCache.set(file, body);
     }
