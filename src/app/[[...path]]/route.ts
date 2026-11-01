@@ -85,7 +85,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ path?: s
     let body = htmlCache.get(file);
     if (body === undefined) {
       const dir = path.relative(ROOT, path.dirname(file)).split(path.sep).join("/");
-      body = fixHtml(fs.readFileSync(file, "utf-8"), `${SITE}/${dir ? dir + "/" : ""}`);
+      body = fixHtml(fs.readFileSync(file, "utf-8"), `${SITE}/${dir ? encodeURI(dir) + "/" : ""}`);
       if (htmlCache.size > 300) htmlCache.clear();
       htmlCache.set(file, body);
     }

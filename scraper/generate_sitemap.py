@@ -14,6 +14,7 @@ Uso: python3 scraper/generate_sitemap.py
 import json
 import os
 import re
+from urllib.parse import quote
 from collections import defaultdict
 from datetime import datetime, timezone
 from xml.sax.saxutils import escape
@@ -54,7 +55,8 @@ def write_sitemap(name, entries):
     lines = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for path, mod in entries:
-        loc = f"{HOST}/{path}/" if path else f"{HOST}/"
+        # los caracteres no ASCII van codificados en porcentaje, como exige el protocolo
+        loc = f"{HOST}/{quote(path, safe='/-._~%')}/" if path else f"{HOST}/"
         lines.append("  <url>")
         lines.append(f"    <loc>{escape(loc)}</loc>")
         if mod:
