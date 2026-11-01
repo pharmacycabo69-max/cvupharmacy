@@ -49,8 +49,16 @@ const existsLocally = (urlPath: string) => {
   return v;
 };
 
+// Favicon (corazón rojo, generado con scraper/make_favicon.py). La copia original no declaraba ninguno.
+const ICONS =
+  `<link rel="icon" href="/favicon.svg?v=1" type="image/svg+xml">` +
+  `<link rel="icon" href="/favicon.ico?v=1" sizes="48x48">` +
+  `<link rel="icon" href="/favicon-32x32.png?v=1" type="image/png" sizes="32x32">` +
+  `<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1">`;
+
 function fixHtml(html: string, canonical: string): string {
   return html
+    .replace(/<head([^>]*)>/i, (m) => (/rel=["'](?:shortcut )?icon["']/i.test(html) ? m : m + ICONS))
     // wget dejó el canonical relativo ("index.html"); debe ser la URL absoluta de la página
     .replace(/(<link rel="canonical" href=")[^"]*(")/g, `$1${canonical}$2`)
     // menú flotante de contacto: sin opción ni dirección de correo

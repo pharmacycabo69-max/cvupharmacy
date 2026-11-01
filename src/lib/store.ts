@@ -143,7 +143,7 @@ const go = (to: string, status: number) => new Response(null, { status, headers:
 
 const page = (title: string, body: string, status = 200) =>
   new Response(
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${title}</title>` +
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><link rel="icon" href="/favicon.svg?v=1" type="image/svg+xml"><title>${title}</title>` +
       `<style>body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;display:grid;place-items:center;min-height:100vh;background:#f6f8fb;color:#0f2540}main{max-width:460px;margin:24px;padding:32px;background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(15,37,64,.08);text-align:center}a.b{display:inline-block;margin-top:18px;padding:13px 24px;border-radius:999px;background:#16a34a;color:#fff;text-decoration:none;font-weight:700}p{line-height:1.6}</style></head><body><main>${body}</main></body></html>`,
     { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } },
   );
