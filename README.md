@@ -35,15 +35,18 @@ precio y foto de `data/catalog.json` y arma el cobro al vuelo con `price_data` (
   `/?wc-ajax=add_to_cart`, `/?wc-ajax=get_refreshed_fragments`, `/wp-json/wc/store/v1/cart` (+ `update-item`,
   `remove-item`, `add-item`) y el formulario clásico de la página de producto.
 - `/checkout/` sirve el formulario original de la tienda, que pide los datos de entrega: contacto, hotel/Airbnb/otra
-  dirección, hora, quién recibe, instrucciones y propina. Con **Pay Now**, el formulario envía esos datos
+  dirección, hora, quién recibe, instrucciones y propina. Con **Pay by card**, el formulario envía esos datos
   (`POST /checkout/`); el servidor los valida, crea la sesión de Stripe Checkout (la propina va como una línea aparte)
   y redirige. Stripe ya no vuelve a pedir teléfono ni dirección: muestra el resumen de la entrega sobre el botón de
-  pago y los datos quedan en el pago (metadata y envío) para verlos en el panel de Stripe. **Pay on Delivery** sigue
+  pago y los datos quedan en el pago (metadata y envío) para verlos en el panel de Stripe. **Pay on delivery** sigue
   armando el mensaje de WhatsApp. Sin `STRIPE_SECRET_KEY` avisa y ofrece WhatsApp.
-- El formulario de `/checkout/` se compacta al servirlo (`CHECKOUT_CSS` y parches en `src/app/[[...path]]/route.ts`):
-  dos columnas desde 720 px, sin la franja de mensajes, errores junto a cada campo en vez de popups, aviso del
-  servidor dentro de la página, cursor en el primer campo vacío (solo con ratón) y código de país según el idioma
-  del navegador. Los datos del cliente se recuerdan 7 días en su navegador.
+- El formulario de `/checkout/` es propio: `public/cvu-checkout.js` sustituye al formulario original de la copia
+  (el handler cambia el script `#cvu-ck-js` por un cargador que solo actúa en `/checkout/`). Pide solo lo necesario:
+  nombre, teléfono, correo, hotel/villa/dirección (+ habitación), cuándo y notas; la propina y la forma de pago son
+  una fila cada una dentro del resumen. En escritorio cabe en una pantalla (dos columnas); en móvil va en una
+  columna con el total y el botón fijos abajo. Errores junto a cada campo (sin popups), Enter pasa al siguiente
+  campo, cursor en el primer campo vacío (solo con ratón) y código de país según el idioma del navegador. Los datos
+  se recuerdan 7 días en el navegador del cliente.
 - `/order-received/?session_id=…` consulta a Stripe: solo confirma el pago si está pagado y muestra los datos de
   entrega; sin un pago real redirige a la tienda. Vacía el carrito solo cuando el pago está confirmado.
 

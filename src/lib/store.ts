@@ -153,7 +153,7 @@ export function parseDelivery(raw: Record<string, unknown>): { ok: true; value: 
   } else return { ok: false, error: "Please choose where we deliver." };
 
   const time = String(raw.deliveryTime ?? "") in TIME_LABELS ? String(raw.deliveryTime) : "asap";
-  const receiver = String(raw.deliveryRecv ?? "") in RECV_LABELS ? String(raw.deliveryRecv) : "self";
+  const receiver = String(raw.deliveryRecv ?? "") in RECV_LABELS ? String(raw.deliveryRecv) : ""; // opcional
 
   const tipUsd = raw.tip === "other" ? parseFloat(String(raw.tipOther ?? "")) : Number(raw.tip ?? 0);
   if (!Number.isFinite(tipUsd) || tipUsd < 0 || tipUsd > MAX_TIP_USD) return { ok: false, error: `The tip must be between $0 and $${MAX_TIP_USD}.` };
@@ -213,7 +213,7 @@ export function buildCheckoutParams(lines: CartLines, origin: string, delivery?:
       customer_phone: delivery.phone,
       delivery_address: delivery.address,
       delivery_time: TIME_LABELS[delivery.time],
-      delivery_receiver: RECV_LABELS[delivery.receiver],
+      delivery_receiver: delivery.receiver ? RECV_LABELS[delivery.receiver] : "",
       delivery_instructions: delivery.instructions,
       tip_usd: (delivery.tipCents / 100).toFixed(2),
     };
@@ -233,7 +233,7 @@ export function buildCheckoutParams(lines: CartLines, origin: string, delivery?:
     // Resumen de la entrega sobre el botón de pago de Stripe
     p.set(
       "custom_text[submit][message]",
-      `Delivering to ${delivery.address} · ${TIME_LABELS[delivery.time]} · ${RECV_LABELS[delivery.receiver]}. ` +
+      `Delivering to ${delivery.address} · ${TIME_LABELS[delivery.time]}${delivery.receiver ? ` · ${RECV_LABELS[delivery.receiver]}` : ""}. ` +
         `Contact: ${delivery.name}, ${delivery.phone}.` + (delivery.instructions ? ` Notes: ${delivery.instructions}` : ""),
     );
     p.set("custom_text[submit][message]", p.get("custom_text[submit][message]")!.slice(0, 1200));
