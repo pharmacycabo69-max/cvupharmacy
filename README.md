@@ -40,6 +40,10 @@ precio y foto de `data/catalog.json` y arma el cobro al vuelo con `price_data` (
   y redirige. Stripe ya no vuelve a pedir teléfono ni dirección: muestra el resumen de la entrega sobre el botón de
   pago y los datos quedan en el pago (metadata y envío) para verlos en el panel de Stripe. **Pay on Delivery** sigue
   armando el mensaje de WhatsApp. Sin `STRIPE_SECRET_KEY` avisa y ofrece WhatsApp.
+- El formulario de `/checkout/` se compacta al servirlo (`CHECKOUT_CSS` y parches en `src/app/[[...path]]/route.ts`):
+  dos columnas desde 720 px, sin la franja de mensajes, errores junto a cada campo en vez de popups, aviso del
+  servidor dentro de la página, cursor en el primer campo vacío (solo con ratón) y código de país según el idioma
+  del navegador. Los datos del cliente se recuerdan 7 días en su navegador.
 - `/order-received/?session_id=…` consulta a Stripe: solo confirma el pago si está pagado y muestra los datos de
   entrega; sin un pago real redirige a la tienda. Vacía el carrito solo cuando el pago está confirmado.
 

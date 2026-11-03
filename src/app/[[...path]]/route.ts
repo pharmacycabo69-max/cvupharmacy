@@ -52,6 +52,8 @@ const existsLocally = (urlPath: string) => {
 // Checkout: la copia solo armaba un mensaje de WhatsApp. Con "Pay Now" ahora manda los datos de entrega al
 // servidor (POST /checkout/), que los valida y abre Stripe mostrándolos; "Pay on Delivery" sigue por WhatsApp.
 const WA_LINE = "var url = 'https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(msg);";
+// Aviso de error dentro de la página (sobre el resumen) en lugar de un popup.
+const BANNER = String.raw`(function(){var o=root.querySelector('.cvu-ck-banner');if(o)o.remove();var cards=root.querySelectorAll('.cvu-ck-card');var last=cards[cards.length-1];var d=document.createElement('div');d.className='cvu-ck-banner';d.setAttribute('role','alert');d.textContent=msg;if(last)last.parentNode.insertBefore(d,last);else root.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'center'});})();`;
 const PAY_NOW =
   "if(d.pmtMethod==='pay-now'){" +
   "var btn=root.querySelector('[data-place]');" +
@@ -60,14 +62,54 @@ const PAY_NOW =
   ".then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})" +
   ".then(function(x){if(x.ok&&x.j.url){window.location.href=x.j.url;return;}throw new Error((x.j&&x.j.error)||'');})" +
   ".catch(function(e){if(btn){btn.disabled=false;btn.innerHTML='Order Securely &rarr;';}" +
-  "alert(e&&e.message&&e.message!=='Failed to fetch'?e.message:'We could not start the card payment. Please try again or choose Pay on Delivery.');});" +
+  "var msg=e&&e.message&&e.message!=='Failed to fetch'?e.message:'We could not start the card payment. Please try again or choose Pay on Delivery.';" +
+  BANNER + "});" +
   "return;}";
+// Validación: el mensaje va junto a cada campo (y se quita al escribir), no en un popup.
+const ALERT_REQUIRED = "alert('Please complete all required fields.');";
+const INLINE_ERRORS = String.raw`(function(){var M={name:'Enter your full name',phone:'Enter a valid phone number',email:'Enter a valid email address',hotelName:'Enter the hotel name',airbnbAddress:'Enter the Airbnb address',otherAddress:'Enter the delivery address'};root.querySelectorAll('.cvu-ck-msg').forEach(function(m){m.remove();});errs.forEach(function(k){var el=root.querySelector('[data-fld="'+k+'"]');if(!el)return;var box=el.closest('.cvu-ck-fld')||el.parentNode;var m=document.createElement('div');m.className='cvu-ck-msg';m.textContent=M[k]||'Required';box.appendChild(m);});if(!root.__cvuErr){root.__cvuErr=1;root.addEventListener('input',function(e){var t=e.target;if(t.classList&&t.classList.contains('cvu-ck-err')){t.classList.remove('cvu-ck-err');var b=t.closest('.cvu-ck-fld');var n=b&&b.querySelector('.cvu-ck-msg');if(n)n.remove();}});}var f=root.querySelector('.cvu-ck-err');if(f)f.focus({preventScroll:true});})();`;
+// El cursor empieza en el primer campo vacío (solo con ratón/trackpad: en el móvil abriría el teclado de golpe).
+const AUTOFOCUS = String.raw`try{if(window.matchMedia&&matchMedia('(pointer:fine)').matches){var order=['name','phone','email','hotelName','airbnbAddress','otherAddress'];for(var i=0;i<order.length;i++){var f0=root.querySelector('[data-fld="'+order[i]+'"]');if(f0&&!f0.value){f0.focus({preventScroll:true});break;}}}}catch(e){}`;
+// Código de país por defecto según el idioma del navegador (lo guardado por el cliente tiene prioridad).
+const COUNTRY_BY_LOCALE = String.raw`countryCode:(function(){var r=((navigator.language||'').split('-')[1]||'').toUpperCase();return {MX:'+52',GB:'+44',FR:'+33',DE:'+49',ES:'+34'}[r]||'+1';})(),`;
 const OLD_NOTICE = "<strong>Note:</strong> Card processing is being finalized. Your order details will be confirmed by our team via WhatsApp within minutes for secure payment coordination.";
 const NEW_NOTICE = "<strong>Secure card payment:</strong> after you tap Order, you pay on Stripe and your delivery details are shown there. Prefer cash? Choose Pay on Delivery and we confirm on WhatsApp.";
 
 // La copia de /checkout/ se guardó con el carrito vacío: trae el bloque "Your cart is currently empty!" de
 // WooCommerce y el pie de página por encima del formulario. Con el formulario activo se ocultan.
-const CHECKOUT_CSS = "<style>body.cvu-ck-active main#content,body.cvu-ck-active #site-footer{display:none!important}body.cvu-ck-active #cvu-ck-root{margin-top:78px}</style>";
+const CHECKOUT_CSS =
+  "<style>" +
+  // la copia trae el bloque de carrito vacío de WooCommerce y el pie de página sobre el formulario
+  "body.cvu-ck-active main#content,body.cvu-ck-active #site-footer{display:none!important}" +
+  // formulario compacto: sin franja, menos espacios, iconos y campos más pequeños
+  "html body.cvu-ck-active .cvu-ck-marquee-wrap{display:none!important}" +
+  "html body.cvu-ck-active #cvu-ck-root{margin-top:72px;padding-top:6px}" +
+  "html body.cvu-ck-active .cvu-ck-h1{font-size:26px;margin:0 0 2px}" +
+  "html body.cvu-ck-active .cvu-ck-sub{margin:0 0 6px}" +
+  "html body.cvu-ck-active .cvu-ck-crumb{margin:0 0 10px}" +
+  "html body.cvu-ck-active .cvu-ck-card{padding:14px 16px;margin-bottom:10px}" +
+  "html body.cvu-ck-active .cvu-ck-fld{margin-bottom:10px}" +
+  "html body.cvu-ck-active .cvu-ck-fld label{margin-bottom:4px}" +
+  "html body.cvu-ck-active .cvu-ck-fld input,html body.cvu-ck-active .cvu-ck-fld select{padding:10px 12px}" +
+  "html body.cvu-ck-active .cvu-ck-fld textarea{min-height:56px;padding:10px 12px}" +
+  "html body.cvu-ck-active .cvu-ck-opt{padding:8px 6px;gap:4px}" +
+  "html body.cvu-ck-active .cvu-ck-opt .cvu-ck-emo,html body.cvu-ck-active .cvu-ck-icon{width:32px;height:32px}" +
+  "html body.cvu-ck-active .cvu-ck-chip{padding:7px 12px}" +
+  "html body.cvu-ck-active .cvu-ck-card .cvu-ck-hint{margin-bottom:8px}" +
+  "html body.cvu-ck-active .cvu-ck-notice{padding:8px 12px;margin-bottom:8px}" +
+  "html body.cvu-ck-active .cvu-ck-pmt-logos{margin-top:8px;padding:8px 10px}" +
+  "html body.cvu-ck-active .cvu-ck-summary{padding:12px;margin-top:8px}" +
+  // errores en línea y aviso del servidor
+  "html body.cvu-ck-active .cvu-ck-msg{color:#dc2626;font-size:12px;font-weight:600;margin-top:4px}" +
+  "html body.cvu-ck-active .cvu-ck-banner{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:10px;grid-column:1/-1}" +
+  // pantallas anchas: dos columnas (contacto+dirección, hora+instrucciones, propina+pago); el resto a todo el ancho
+  "@media(min-width:720px){" +
+  "html body.cvu-ck-active #cvu-ck-root{max-width:800px;display:grid!important;grid-template-columns:1fr 1fr;column-gap:12px;align-items:start}" +
+  "html body.cvu-ck-active #cvu-ck-root>*{grid-column:1/-1}" +
+  "html body.cvu-ck-active #cvu-ck-root>.cvu-ck-card:nth-child(n+5):nth-child(-n+10){grid-column:auto}" +
+  "html body.cvu-ck-active .cvu-ck-sticky-inner{max-width:800px}" +
+  "}" +
+  "</style>";
 
 // Favicon (corazón rojo, generado con scraper/make_favicon.py). La copia original no declaraba ninguno.
 const ICONS =
@@ -81,6 +123,9 @@ function fixHtml(html: string, canonical: string): string {
     .replace(/<head([^>]*)>/i, (m) => (/rel=["'](?:shortcut )?icon["']/i.test(html) ? m : m + ICONS))
     .replace(WA_LINE, () => PAY_NOW + WA_LINE)
     .replace(OLD_NOTICE, () => NEW_NOTICE)
+    .replace(ALERT_REQUIRED, () => INLINE_ERRORS)
+    .replace("countryCode:'+1',", () => COUNTRY_BY_LOCALE)
+    .replace(/render\(\);\s*\}\s*if\(document\.readyState==='loading'\) document\.addEventListener\('DOMContentLoaded',init\);/, (m) => m.replace("render();", () => "render();" + AUTOFOCUS))
     .replace("</head>", () => CHECKOUT_CSS + "</head>")
     // wget dejó el canonical relativo ("index.html"); debe ser la URL absoluta de la página
     .replace(/(<link rel="canonical" href=")[^"]*(")/g, `$1${canonical}$2`)
