@@ -53,6 +53,29 @@ precio y foto de `data/catalog.json` y arma el cobro al vuelo con `price_data` (
 Variables de entorno (Vercel): `STRIPE_SECRET_KEY` (requerida para cobrar) y `SITE_URL` (opcional; por defecto se usa
 el dominio de la petición).
 
+## SEO y conversión (`src/lib/seo.ts`)
+
+Se aplica al vuelo sobre el HTML de `mirror/`; la copia no se modifica.
+
+- **Contenido duplicado:** 13 páginas que competían por la misma búsqueda (mismo título o intención) redirigen con
+  301 a la versión más completa (`CONSOLIDATE`). Los enlaces internos apuntan directo al destino. `hello-world` y
+  las páginas de autor van a la portada.
+- **noindex, follow:** etiquetas de blog y de producto, `category/uncategorized`, carrito, checkout, cuenta y
+  páginas internas (`doctor-dashboard`, `meeting`). Se envía como meta y como cabecera `X-Robots-Tag`.
+- **Sitemaps:** se sirven filtrados, sin URLs redirigidas o noindex; el índice ya no incluye etiquetas ni autores.
+  **robots.txt** se genera en `ROBOTS_TXT`.
+- **Limpieza del documento:** se quitan los bloques de Elementor ocultos en todos los dispositivos (en la portada,
+  un documento HTML completo con otro `<title>`, canonical y fuente), los `<title>`/metas/canonical que había dentro
+  del `<body>`, y la meta description duplicada de las fichas. Las 4 hojas de Google Fonts pasan a ser 1 petición.
+- **Fichas de producto:** título y descripción con intención local ("… | Delivery in Cabo San Lucas", precio,
+  entrega en menos de 60 min) y nombres en MAYÚSCULAS normalizados; schema `Product` + `Offer` (precio USD, en
+  stock) para resultados enriquecidos y Google Merchant. Las frases plantilla de "shipping" pasan a entrega local.
+  Las 791 fichas sin precio explican que se piden por WhatsApp en vez de mostrar un precio en blanco.
+- **Portada:** schema `Pharmacy` (dirección de Plaza Gali, teléfono, horario de tienda 8:00–18:00, zona de reparto).
+- **Autor:** los posts publicaban un correo personal como autor; ahora firma "CVU Pharmacy Team".
+- **Enlaces externos:** se quitan los de pharmacyincabo.com (sitio ajeno) de las listas "Related". Los de
+  cabopharmacy.com y cmcpharmacycabo.com se mantienen (son sitios propios).
+
 ## Limitaciones
 
 Es una copia estática: lo que necesita el servidor de WordPress/WooCommerce no funciona (búsqueda, login, `wp-json`);

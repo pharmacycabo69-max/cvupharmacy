@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { handleStore, HTML_PATCH } from "@/lib/store";
+import { applySeo, cleanDocument, filterSitemap, isNoindex, redirectTarget, ROBOTS_TXT, SITE } from "@/lib/seo";
 
 /**
  * Sirve la copia estática de cvupharmacy.com (carpeta mirror/, hecha con wget)
@@ -13,7 +14,6 @@ import { handleStore, HTML_PATCH } from "@/lib/store";
 export const dynamic = "force-dynamic";
 
 const ROOT = path.join(process.cwd(), "mirror");
-const SITE = "https://cvupharmacy.com";
 
 const TYPES: Record<string, string> = {
   html: "text/html; charset=utf-8", css: "text/css; charset=utf-8", js: "text/javascript; charset=utf-8",
@@ -105,6 +105,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ path?: s
   const store = await handleStore(req, segs);
   if (store) return store;
   const url = new URL(req.url);
+  const target = redirectTarget(url.pathname);
+  if (target) return new Response(null, { status: 301, headers: { location: target, "cache-control": "public, max-age=86400" } });
+  if (url.pathname === "/robots.txt") {
+    return new Response(ROBOTS_TXT, { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=3600" } });
+  }
   const file = resolve(segs, url.search);
   if (!file) return new Response("Not found", { status: 404 });
 
@@ -115,11 +120,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ path?: s
     let body = htmlCache.get(file);
     if (body === undefined) {
       const dir = path.relative(ROOT, path.dirname(file)).split(path.sep).join("/");
-      body = fixHtml(fs.readFileSync(file, "utf-8"), `${SITE}/${dir ? encodeURI(dir) + "/" : ""}`);
+      const pagePath = `/${dir ? encodeURI(dir) + "/" : ""}`;
+      body = applySeo(fixHtml(cleanDocument(fs.readFileSync(file, "utf-8")), SITE + pagePath), pagePath);
       if (htmlCache.size > 300) htmlCache.clear();
       htmlCache.set(file, body);
     }
-    return new Response(body, { headers: { "content-type": type, "cache-control": "public, max-age=300" } });
+    const headers: Record<string, string> = { "content-type": type, "cache-control": "public, max-age=300" };
+    if (isNoindex(url.pathname)) headers["x-robots-tag"] = "noindex, follow";
+    return new Response(body, { headers });
+  }
+
+  if (ext === "xml" && /sitemap/.test(path.basename(file))) {
+    return new Response(filterSitemap(fs.readFileSync(file, "utf-8")), {
+      headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=3600" },
+    });
   }
 
   const { size } = fs.statSync(file);
