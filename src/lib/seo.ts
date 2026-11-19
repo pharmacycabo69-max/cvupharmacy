@@ -1,3 +1,4 @@
+import { hotelSection } from "@/lib/hotels";
 import { getCatalog } from "@/lib/store";
 
 /**
@@ -15,6 +16,7 @@ export const SITE = "https://cvupharmacy.com";
 const PHONE = "+52 624 226 1023";
 const LOGO = `${SITE}/wp-content/uploads/2026/04/CVU-PARMACY.png`;
 const AUTHOR = "CVU Pharmacy Team";
+const HOTEL_MARK = "<!--cvu-hotel-guide-->";
 
 /* ---------- consolidación de contenido duplicado ---------- */
 
@@ -151,6 +153,9 @@ export function cleanDocument(html: string): string {
   body = out + body.slice(last);
 
   body = body
+    // cierre del documento anidado de las páginas de hotel: marca para insertar la guía ampliada y evita que
+    // fixHtml tome este </body> como el final real de la página
+    .replace("<p></body></html></p>", HOTEL_MARK)
     .replace(/<title>[\s\S]*?<\/title>/gi, "")
     .replace(/<meta\s+(?:name|property)=["'](?:description|keywords|viewport|robots|author|og:[^"']*|twitter:[^"']*)["'][^>]*>/gi, "")
     .replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
@@ -292,6 +297,14 @@ export function applySeo(html: string, path: string): string {
     const short = decode(base).length + 15 <= 62 ? `${base} | CVU Pharmacy` : base;
     return `<title>${short}</title>`;
   });
+
+  // páginas de hotel: guía ampliada debajo del encabezado (el original terminaba ahí)
+  const hotel = hotelSection(path);
+  if (hotel && html.includes(HOTEL_MARK)) {
+    html = html
+      .replace(HOTEL_MARK, () => hotel.html)
+      .replace("</head>", () => jsonLd(hotel.faq) + "</head>");
+  }
 
   if (path === "/") html = html.replace("</head>", () => jsonLd(pharmacySchema()) + "</head>");
   if (path.startsWith("/product/")) html = productSeo(html, path);
