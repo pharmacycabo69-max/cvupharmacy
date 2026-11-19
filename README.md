@@ -73,6 +73,10 @@ Se aplica al vuelo sobre el HTML de `mirror/`; la copia no se modifica.
   Las 791 fichas sin precio explican que se piden por WhatsApp en vez de mostrar un precio en blanco.
 - **Portada:** schema `Pharmacy` (dirección de Plaza Gali, teléfono, horario de tienda 8:00–18:00, zona de reparto).
 - **Autor:** los posts publicaban un correo personal como autor; ahora firma "CVU Pharmacy Team".
+- **Páginas de hotel (`src/lib/hotels.ts`):** las 35 páginas "Pharmacy delivery to <hotel>" solo tenían el
+  encabezado. Debajo se añade una guía por hotel y zona (Médano, Pacífico, Corredor, San José, East Cape): cómo
+  funciona la entrega, qué se pide más (con enlaces a categorías), hoteles vecinos de la misma zona, atención
+  médica, preguntas frecuentes (schema `FAQPage`) y botón de WhatsApp con el hotel ya escrito.
 - **Enlaces externos:** se quitan los de pharmacyincabo.com (sitio ajeno) de las listas "Related". Los de
   cabopharmacy.com y cmcpharmacycabo.com se mantienen (son sitios propios).
 
