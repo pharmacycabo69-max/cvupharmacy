@@ -274,6 +274,20 @@ export function applySeo(html: string, path: string): string {
     .replace(/"name":"Pharmacy Delivery Services"/g, '"name":"CVU Pharmacy"')
     .replace(/(<a\b[^>]*\shref=")[^"]*\/author\/[^"]*(")/g, "$1/$2");
 
+  // afirmaciones que no se pueden demostrar ("#1", calificaciones sin reseñas detrás) → diferenciadores reales.
+  // Las calificaciones propias en schema (aggregateRating) van contra las reglas de Google.
+  html = html
+    .replace(/is the #1 English-speaking pharmacy delivery in Cabo San Lucas/g, "is Cabo San Lucas' 24/7 English-speaking pharmacy delivery")
+    .replace(/<span>4\.9 &middot; Rated by 5,000\+ travelers<\/span>/g, "<span>English-speaking pharmacy &middot; 24/7 delivery</span>")
+    .replace(/⭐ 4\.9 rated by U\.S\. &amp; Canadian travelers/g, "🗣️ English-speaking team for U.S. &amp; Canadian travelers")
+    .replace(/(<div class="cvu-consult-stars">)(?:&#9733;)+<span>4\.9 &middot; 87 Reviews<\/span>/g, "$1<span>Licensed physician &middot; English &amp; Spanish</span>")
+    .replace(/<span class="st">★<\/span> 4\.9 · traveler rating/g, "Hotel &amp; villa visits")
+    .replace(/<strong>★ 4\.9<\/strong> · Trusted by hundreds of guests at/g, "<strong>24/7 delivery</strong> · Serving guests at")
+    .replace(/,?"aggregateRating":\{"@type":"AggregateRating"[^}]*\}/g, "");
+  if (path.startsWith("/product/")) {
+    html = html.replace("</head>", () => "<style>.cvu-pp-rating svg{display:none}</style></head>");
+  }
+
   // enlaces a un sitio ajeno (pharmacyincabo.com) en las listas "Related": se quita el elemento; si no, el enlace
   html = html
     .replace(/<li><a\b[^>]*href="https?:\/\/(?:www\.)?pharmacyincabo\.com[^"]*"[^>]*>[\s\S]*?<\/a><\/li>\s*/g, "")
