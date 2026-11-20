@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { handleStore, HTML_PATCH } from "@/lib/store";
+import { listingPage } from "@/lib/categories";
 import { applySeo, cleanDocument, filterSitemap, isNoindex, redirectTarget, ROBOTS_TXT, SITE } from "@/lib/seo";
 
 /**
@@ -110,6 +111,25 @@ export async function GET(req: Request, { params }: { params: Promise<{ path?: s
   if (url.pathname === "/robots.txt") {
     return new Response(ROBOTS_TXT, { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=3600" } });
   }
+  // /shop/page/N/ y /product-category/…/page/N/: no existen en la copia; se generan desde el catálogo
+  if (/\/page\/\d+\/?$/.test(url.pathname)) {
+    const pagePath = url.pathname.endsWith("/") ? url.pathname : url.pathname + "/";
+    let body = htmlCache.get(pagePath);
+    if (body === undefined) {
+      const raw = listingPage(pagePath);
+      if (raw !== null) {
+        body = applySeo(fixHtml(cleanDocument(raw), SITE + pagePath), pagePath);
+        if (htmlCache.size > 300) htmlCache.clear();
+        htmlCache.set(pagePath, body);
+      }
+    }
+    if (body !== undefined) {
+      const headers: Record<string, string> = { "content-type": TYPES.html, "cache-control": "public, max-age=300" };
+      if (isNoindex(url.pathname)) headers["x-robots-tag"] = "noindex, follow";
+      return new Response(body, { headers });
+    }
+  }
+
   const file = resolve(segs, url.search);
   if (!file) return new Response("Not found", { status: 404 });
 
