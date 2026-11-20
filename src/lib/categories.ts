@@ -18,8 +18,18 @@ const WHATSAPP = "5216242261023";
 type Item = [slug: string, name: string, thumb: string, priceCents: number, inStock: 0 | 1];
 type Index = { p: Record<string, Item>; c: Record<string, number[]> };
 let index: Index | null = null;
-const getIndex = (): Index =>
-  (index ??= JSON.parse(fs.readFileSync(path.join(process.cwd(), "data", "category-index.json"), "utf-8")));
+// Si el índice faltara en el despliegue, las categorías siguen funcionando (sin páginas 2+ ni conteo).
+function getIndex(): Index {
+  if (!index) {
+    try {
+      index = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data", "category-index.json"), "utf-8"));
+    } catch (e) {
+      console.error("category-index.json no disponible", e);
+      index = { p: {}, c: {} };
+    }
+  }
+  return index!;
+}
 
 const decode = (s: string) =>
   s.replace(/&#0?38;|&amp;/g, "&").replace(/&#0?39;|&#8217;/g, "'").replace(/&quot;/g, '"').replace(/&#(\d+);/g, (_m, n) => String.fromCodePoint(+n));
@@ -79,7 +89,8 @@ export function listingPage(pathname: string): string | null {
   const { p, c } = getIndex();
   const html = fs.readFileSync(file, "utf-8");
   const onPage1 = new Set([...html.matchAll(/<li class="product type-product post-(\d+)/g)].map((x) => +x[1]));
-  const all = c[cat] ?? [];
+  const all = c[cat];
+  if (!all) return null;
   const rest = all.filter((id) => !onPage1.has(id) && p[id]);
   const pages = 1 + Math.ceil(rest.length / PER_PAGE);
   if (page > pages) return null;
