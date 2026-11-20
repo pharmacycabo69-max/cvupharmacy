@@ -77,6 +77,12 @@ Se aplica al vuelo sobre el HTML de `mirror/`; la copia no se modifica.
   encabezado. Debajo se añade una guía por hotel y zona (Médano, Pacífico, Corredor, San José, East Cape): cómo
   funciona la entrega, qué se pide más (con enlaces a categorías), hoteles vecinos de la misma zona, atención
   médica, preguntas frecuentes (schema `FAQPage`) y botón de WhatsApp con el hotel ya escrito.
+- **Tienda y categorías (`src/lib/categories.ts`):** la copia solo trae la página 1 de `/shop/` y de cada
+  categoría; `/page/2/` en adelante se genera con la página 1 como plantilla y `data/category-index.json`
+  (regenerar con `node scraper/build_category_index.mjs` si cambia `data/products.json`). Las 211 categorías tienen
+  título y descripción locales, y 20 categorías clave una guía de compra con preguntas frecuentes (`FAQPage`).
+- **Afirmaciones:** "#1" y calificaciones "4.9" sin reseñas detrás se sustituyen por datos verificables; se quita el
+  `aggregateRating` autoasignado de `/iv-therapy/`.
 - **Enlaces externos:** se quitan los de pharmacyincabo.com (sitio ajeno) de las listas "Related". Los de
   cabopharmacy.com y cmcpharmacycabo.com se mantienen (son sitios propios).
 

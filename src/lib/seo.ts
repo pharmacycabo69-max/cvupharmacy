@@ -1,3 +1,4 @@
+import { categorySeo } from "@/lib/categories";
 import { hotelSection } from "@/lib/hotels";
 import { getCatalog } from "@/lib/store";
 
@@ -318,6 +319,14 @@ export function applySeo(html: string, path: string): string {
     html = html
       .replace(HOTEL_MARK, () => hotel.html)
       .replace("</head>", () => jsonLd(hotel.faq) + "</head>");
+  }
+
+  // tienda y categorías: título, descripción y guía de compra
+  const listing = path.startsWith("/product-category/") || path.startsWith("/shop/") ? categorySeo(html, path) : null;
+  if (listing) {
+    html = listing.html.replace(/<title>[\s\S]*?<\/title>/, () => `<title>${attr(listing.title)}</title>`);
+    for (const k of ["og:title", "twitter:title"]) html = setMeta(html, k, listing.title);
+    for (const k of ["description", "og:description", "twitter:description"]) html = setMeta(html, k, listing.desc);
   }
 
   if (path === "/") html = html.replace("</head>", () => jsonLd(pharmacySchema()) + "</head>");
